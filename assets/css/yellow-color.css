@@ -1,0 +1,98 @@
+/*	Main Color File
+	color: Yellow	
+*/
+/*===== Background Color =====*/
+.yellow-bg,
+.yellow-bg-layer:before,
+.sudo-bg-yellow:before,
+.popular-dish-info > a.yellow-bg,
+.read-more:hover,
+.read-more:focus,
+.search-frm > button:hover,
+.search-frm > button:focus,
+.newsletter-frm > button:hover,
+.newsletter-frm > button:focus,
+.sign-form button:hover,
+.sign-form button:focus,
+.booking-table > table tbody td h5:before,
+.booking-table > table tbody td a.detail-link:hover,
+.booking-table > table tbody td a.detail-link:focus,
+.profile-info > a.change-password.yellow-clr::before,
+.profile-img-upload-btn > label.red-bg:hover,
+.responsive-logomenu > span.red-bg:hover,
+.responsive-menu > span.red-bg:hover,
+.register-btn > a.red-bg:hover,
+.track-popup-innr > form button.red-bg:hover,
+.track-popup-innr > form a.red-bg:hover,
+.order-time > a.red-bg:hover,
+.order-time > a.red-bg:focus,
+a.close-buyer:hover,
+a.close-buyer:focus,
+a.thanks-close:hover,
+a.thanks-close:focus,
+.restaurant-search-form,
+.chef-box,
+.menu-sec > a:hover:hover
+{
+	background-color: #ffbe00;
+}
+
+/*===== Text Color =====*/
+.yellow-clr,
+nav > div ul > li:hover > a,
+nav > div > ul > li a:focus,
+.bottom-bar p a:hover,
+.bottom-bar p a:focus,
+.popular-dish-info > a.yellow-bg:hover,
+.popular-dish-info > a.yellow-bg:focus,
+.follow-us > a:hover,
+.follow-us > a:focus,
+.error-page-inner > a:hover,
+.error-page-inner > a:focus,
+.gallery-bx > h3 a:hover,
+.gallery-bx > h3 a:focus,
+.red-bg .user-info-inner > h5 a:hover,
+.red-bg .user-info-inner > h5 a:focus,
+.red-bg .user-info-inner > span a:hover,
+.red-bg .user-info-inner > span a:focus,
+.booking-table > table tbody td h5 a:hover,
+.booking-table > table tbody td h5 a:focus,
+.on,
+.menu-lst > ul li:hover > a,
+.menu-lst > ul li > a:focus,
+.menu-lst > ul li.active > a
+{
+	color: #ffbe00;
+}
+
+/*===== Border Color =====*/
+.filter-buttons > li.active a,
+.error-page-inner > a,
+.user-info.red-bg > img
+{
+	border-color: #ffbe00;
+}
+
+/*===== Border Top Color =====*/ 
+
+{
+	border-top-color: #ffbe00;
+}
+
+/*===== Border Right Color =====*/ 
+
+{
+	border-right-color: #ffbe00;
+}
+
+/*===== Border Bottom Color =====*/
+
+{
+	border-bottom-color: #ffbe00;
+}
+
+/*===== Border Left Color =====*/ 
+
+{
+	border-left-color: #ffbe00;
+}
