@@ -31,21 +31,23 @@
 // change Password
 if(isset($_POST['changepassword']))
 {
-$userid=$_SESSION['fosuid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbluser where ID='$userid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbluser set Password='$newpassword' where ID='$userid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
+    $userid=$_SESSION['fosuid'];
+    $currentPassword=$_POST['currentpassword'];
+    $newPassword=$_POST['newpassword'];
+    $stmt = mysqli_prepare($con, "SELECT Password FROM tbluser WHERE ID = ?");
+    mysqli_stmt_bind_param($stmt, "i", $userid);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    if($row && app_verify_password($currentPassword, $row['Password'])){
+        $newHash = app_hash_password($newPassword);
+        $update = mysqli_prepare($con, "UPDATE tbluser SET Password = ? WHERE ID = ?");
+        mysqli_stmt_bind_param($update, "si", $newHash, $userid);
+        mysqli_stmt_execute($update);
+        $msg= "Your password successfully changed"; 
+    } else {
+        $msg="Your current password is wrong";
+    }
 }
 
    ?>

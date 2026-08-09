@@ -8,13 +8,14 @@ if(isset($_POST['submit']))
   {
     $contactno=$_SESSION['contactno'];
     $email=$_SESSION['email'];
-    $password=md5($_POST['newpassword']);
+    $password=app_hash_password($_POST['newpassword']);
 
-        $query=mysqli_query($con,"update tbladmin set Password='$password'  where  Email='$email' && MobileNumber='$contactno' ");
-   if($query)
+    $stmt = mysqli_prepare($con, "UPDATE tbladmin SET Password = ? WHERE Email = ? AND MobileNumber = ?");
+    mysqli_stmt_bind_param($stmt, "sss", $password, $email, $contactno);
+    if(mysqli_stmt_execute($stmt))
    {
-echo "<script>alert('Password successfully changed');</script>";
-session_destroy();
+      echo "<script>alert('Password successfully changed');</script>";
+      session_destroy();
    }
   
   }

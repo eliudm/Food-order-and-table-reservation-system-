@@ -9,16 +9,21 @@ if (strlen($_SESSION['fosaid']==0)) {
 if(isset($_POST['submit']))
 {
 $adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
+$currentPassword=$_POST['currentpassword'];
+$newPassword=$_POST['newpassword'];
+$stmt = mysqli_prepare($con, "SELECT Password FROM tbladmin WHERE ID = ?");
+mysqli_stmt_bind_param($stmt, "i", $adminid);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$row = mysqli_fetch_assoc($result);
+if($row && app_verify_password($currentPassword, $row['Password'])){
+  $newHash = app_hash_password($newPassword);
+  $update = mysqli_prepare($con, "UPDATE tbladmin SET Password = ? WHERE ID = ?");
+  mysqli_stmt_bind_param($update, "si", $newHash, $adminid);
+  mysqli_stmt_execute($update);
+  $msg= "Your password successfully changed"; 
 } else {
-
-$msg="Your current password is wrong";
+  $msg="Your current password is wrong";
 }
 
 

@@ -1,20 +1,30 @@
 <?php
 if(isset($_POST['login']))
   {
-    $emailcon=$_POST['emailcont'];
-    $password=md5($_POST['password']);
-    $query=mysqli_query($con,"select ID,Email from tbluser where  (Email='$emailcon' || MobileNumber='$emailcon') && Password='$password' ");
-    $ret=mysqli_fetch_array($query);
-    if($ret>0){
+    $emailcon=trim($_POST['emailcont']);
+    $password=$_POST['password'];
+    $stmt = mysqli_prepare($con, "SELECT ID, Email, Password FROM tbluser WHERE Email = ? OR MobileNumber = ?");
+    mysqli_stmt_bind_param($stmt, "ss", $emailcon, $emailcon);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $ret = mysqli_fetch_assoc($result);
+    if($ret && app_verify_password($password, $ret['Password'])){
+      if (!password_verify($password, $ret['Password'])) {
+        $newHash = app_hash_password($password);
+        $update = mysqli_prepare($con, "UPDATE tbluser SET Password = ? WHERE ID = ?");
+        mysqli_stmt_bind_param($update, "si", $newHash, $ret['ID']);
+        mysqli_stmt_execute($update);
+      }
       $_SESSION['fosuid']=$ret['ID'];
-        $_SESSION['uemail']=$ret['Email'];
+      $_SESSION['uemail']=$ret['Email'];
       echo "<script>window.location.href='index.php'</script>";
     }
     else{
- echo "<script>alert('Invalid details');</script>";
+      echo "<script>alert('Invalid details');</script>";
     }
   }
   ?>
+
 
 
 

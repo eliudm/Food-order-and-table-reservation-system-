@@ -5,19 +5,29 @@ include('includes/dbconnection.php');
 
 if(isset($_POST['login']))
   {
-    $adminuser=$_POST['username'];
-    $password=md5($_POST['password']);
-    $query=mysqli_query($con,"select ID from tbladmin where  UserName='$adminuser' && Password='$password' ");
-    $ret=mysqli_fetch_array($query);
-    if($ret>0){
+    $adminuser=trim($_POST['username']);
+    $password=$_POST['password'];
+    $stmt = mysqli_prepare($con, "SELECT ID, Password FROM tbladmin WHERE UserName = ?");
+    mysqli_stmt_bind_param($stmt, "s", $adminuser);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $ret = mysqli_fetch_assoc($result);
+    if($ret && app_verify_password($password, $ret['Password'])){
+      if (!password_verify($password, $ret['Password'])) {
+        $newHash = app_hash_password($password);
+        $update = mysqli_prepare($con, "UPDATE tbladmin SET Password = ? WHERE ID = ?");
+        mysqli_stmt_bind_param($update, "si", $newHash, $ret['ID']);
+        mysqli_stmt_execute($update);
+      }
       $_SESSION['fosaid']=$ret['ID'];
-     header('location:dashboard.php');
+      header('location:dashboard.php');
     }
     else{
     $msg="Invalid Details.";
     }
   }
   ?>
+
 <!DOCTYPE html>
 <html>
 

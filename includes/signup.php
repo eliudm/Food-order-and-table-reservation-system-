@@ -1,32 +1,36 @@
   <?php 
 if(isset($_POST['submit']))
   {
-    $fname=$_POST['firstname'];
-    $lname=$_POST['lastname'];
-    $contno=$_POST['mobilenumber'];
-    $email=$_POST['email'];
-    $password=md5($_POST['password']);
+    $fname=trim($_POST['firstname']);
+    $lname=trim($_POST['lastname']);
+    $contno=trim($_POST['mobilenumber']);
+    $email=trim($_POST['email']);
+    $password=app_hash_password($_POST['password']);
 
-    $ret=mysqli_query($con, "select Email from tbluser where Email='$email' || MobileNumber='$contno'");
-    $result=mysqli_fetch_array($ret);
-    if($result>0){
- echo "<script>alert('This email or Contact Number already associated with another account');</script>";
+    $stmt = mysqli_prepare($con, "SELECT Email FROM tbluser WHERE Email = ? OR MobileNumber = ?");
+    mysqli_stmt_bind_param($stmt, "ss", $email, $contno);
+    mysqli_stmt_execute($stmt);
+    $ret = mysqli_stmt_get_result($stmt);
+    if(mysqli_num_rows($ret) > 0){
+      echo "<script>alert('This email or Contact Number already associated with another account');</script>";
     }
     else{
-    $query=mysqli_query($con, "insert into tbluser(FirstName, LastName, MobileNumber, Email, Password) value('$fname', '$lname','$contno', '$email', '$password' )");
-    if ($query) {
-     echo "<script>alert('You have successfully registered');</script>";
-     echo "<script>window.location.href='index.php'</script>";
-  }
-  else
-    {
-       echo "<script>alert('Something Went Wrong. Please try again.');</script>";
+      $stmt = mysqli_prepare($con, "INSERT INTO tbluser(FirstName, LastName, MobileNumber, Email, Password) VALUES (?, ?, ?, ?, ?)");
+      mysqli_stmt_bind_param($stmt, "sssss", $fname, $lname, $contno, $email, $password);
+      if (mysqli_stmt_execute($stmt)) {
+        echo "<script>alert('You have successfully registered');</script>";
         echo "<script>window.location.href='index.php'</script>";
+      }
+      else
+      {
+        echo "<script>alert('Something Went Wrong. Please try again.');</script>";
+        echo "<script>window.location.href='index.php'</script>";
+      }
     }
-}
 }
 
  ?>
+
 
 <!-- Javascript for password confirmation-->
 <script type="text/javascript">
