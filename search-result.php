@@ -3,16 +3,17 @@ session_start();
 include_once('includes/dbconnection.php');
 if(isset($_POST['addcart']))
 {
-$foodid=$_POST['foodid'];
-$foodqty=$_POST['foodqty'];
-$userid= $_SESSION['fosuid'];
-$query=mysqli_query($con,"insert into tblorders(UserId,FoodId,FoodQty) values('$userid','$foodid','$foodqty') ");
-if($query)
-{
- echo "<script>alert('Food has been added in to the cart');</script>";   
-} else {
- echo "<script>alert('Something went wrong.');</script>";      
-}
+    $foodid = intval($_POST['foodid']);
+    $foodqty = intval($_POST['foodqty']);
+    $userid = (string) $_SESSION['fosuid'];
+    $stmt = mysqli_prepare($con, "INSERT INTO tblorders(UserId,FoodId,FoodQty) VALUES (?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "sii", $userid, $foodid, $foodqty);
+    if(mysqli_stmt_execute($stmt))
+    {
+        echo "<script>alert('Food has been added in to the cart');</script>";   
+    } else {
+        echo "<script>alert('Something went wrong.');</script>";      
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -59,24 +60,31 @@ if($query)
                                     <div class="row">
 
 <?php
-$sdata=$_POST['searchdata'];
-if (isset($_GET['page_no']) && $_GET['page_no']!="") {
-	$page_no = $_GET['page_no'];
-	} else {
-		$page_no = 1;
-        }
+$sdata=trim($_POST['searchdata']);
+$page_no = isset($_GET['page_no']) && is_numeric($_GET['page_no']) ? (int) $_GET['page_no'] : 1;
+if ($page_no < 1) {
+    $page_no = 1;
+}
 
 	$total_records_per_page = 12;
     $offset = ($page_no-1) * $total_records_per_page;
 	$previous_page = $page_no - 1;
 	$next_page = $page_no + 1;
-	$adjacents = "2"; 
-	$result_count = mysqli_query($con,"SELECT COUNT(*) As total_records FROM tblfood where ItemName like '%$sdata%'");
+	$adjacents = "2";
+	$sdataLike = "%{$sdata}%";
+
+	$stmt = mysqli_prepare($con, "SELECT COUNT(*) As total_records FROM tblfood WHERE ItemName LIKE ?");
+	mysqli_stmt_bind_param($stmt, "s", $sdataLike);
+	mysqli_stmt_execute($stmt);
+	$result_count = mysqli_stmt_get_result($stmt);
 	$total_records = mysqli_fetch_array($result_count);
 	$total_records = $total_records['total_records'];
   $total_no_of_pages = ceil($total_records / $total_records_per_page);
 	$second_last = $total_no_of_pages - 1; // total page minus 1
-	  $result = mysqli_query($con,"SELECT * FROM tblfood where ItemName like '%$sdata%' LIMIT $offset, $total_records_per_page");
+	$stmt = mysqli_prepare($con, "SELECT * FROM tblfood WHERE ItemName LIKE ? LIMIT ?, ?");
+	mysqli_stmt_bind_param($stmt, "sii", $sdataLike, $offset, $total_records_per_page);
+	mysqli_stmt_execute($stmt);
+	$result = mysqli_stmt_get_result($stmt);
     while($row = mysqli_fetch_array($result)){
 	?>
 

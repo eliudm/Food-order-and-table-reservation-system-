@@ -16,34 +16,49 @@ $city=$_POST['city'];
 $userid=$_SESSION['fosuid'];
 //genrating order number
 $orderno= mt_rand(100000000, 999999999);
-$query="update tblorders set OrderNumber='$orderno',IsOrderPlaced='1' where UserId='$userid' and IsOrderPlaced is null;";
-$query.="insert into tblorderaddresses(UserId,Ordernumber,Flatnobuldngno,StreetName,Area,Landmark,City) values('$userid','$orderno','$fnaobno','$street','$area','$lndmark','$city');";
 
-$result = mysqli_multi_query($con, $query);
-if ($result) {
-//Code for email
-$toemail=$_SESSION['uemail'];
-$subj="FOS Order Confirmation";       
-$heade .= "MIME-Version: 1.0"."\r\n";
-$heade .= 'Content-type: text/html; charset=iso-8859-1'."\r\n";
-$heade .= 'From:FOS<noreply@yourdomain.com>'."\r\n";    // Put your sender email here
-$msgec.="<html></body><div><div>Hello,</div></br></br>";
-$msgec.="<div style='padding-top:8px;'> Your order has been placed successfully <br />
+mysqli_begin_transaction($con);
+try {
+    $updateOrders = mysqli_prepare($con, "UPDATE tblorders SET OrderNumber = ?, IsOrderPlaced = 1 WHERE UserId = ? AND IsOrderPlaced IS NULL");
+    mysqli_stmt_bind_param($updateOrders, "ss", $orderno, $userid);
+    mysqli_stmt_execute($updateOrders);
+
+    $insertAddress = mysqli_prepare($con, "INSERT INTO tblorderaddresses(UserId,Ordernumber,Flatnobuldngno,StreetName,Area,Landmark,City) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($insertAddress, "sssssss", $userid, $orderno, $fnaobno, $street, $area, $lndmark, $city);
+    mysqli_stmt_execute($insertAddress);
+
+    mysqli_commit($con);
+
+    // Code for email
+    $toemail = $_SESSION['uemail'];
+    $subj = "FOS Order Confirmation";
+    $heade = "MIME-Version: 1.0"."\r\n";
+    $heade .= 'Content-type: text/html; charset=iso-8859-1' ."\r\n";
+    $heade .= 'From:FOS<noreply@yourdomain.com>' ."\r\n";    // Put your sender email here
+    $msgec = "<html></body><div><div>Hello,</div></br></br>";
+    $msgec .= "<div style='padding-top:8px;'> Your order has been placed successfully <br />
 <strong> Order Number: </strong> $orderno </br>
 </div><div></div></body></html>";
-mail($toemail,$subj,$msgec,$heade);
-echo '<script>alert("Your order placed successfully. Order number is "+"'.$orderno.'")</script>';
-echo "<script>window.location.href='my-account.php'</script>";
+    mail($toemail,$subj,$msgec,$heade);
+    echo '<script>alert("Your order placed successfully. Order number is "+"'.$orderno.'")</script>';
+    echo "<script>window.location.href='my-account.php'</script>";
+} catch (Exception $e) {
+    mysqli_roll_back($con);
+    echo "<script>alert('Something went wrong while placing your order. Please try again.');</script>";
+}
 
 }
 }   
 
 //Code deletion
 if(isset($_GET['delid'])) {
-$rid=$_GET['delid'];
-$query=mysqli_query($con,"delete from tblorders where ID='$rid'");
-echo '<script>alert("Food item deleted")</script>';
-echo "<script>window.location.href='cart.php'</script>";
+    $rid = intval($_GET['delid']);
+    $stmt = mysqli_prepare($con, "DELETE FROM tblorders WHERE ID = ?");
+    mysqli_stmt_bind_param($stmt, "i", $rid);
+    if(mysqli_stmt_execute($stmt)) {
+        echo '<script>alert("Food item deleted")</script>';
+    }
+    echo "<script>window.location.href='cart.php'</script>";
 
 }
 ?>
@@ -121,9 +136,12 @@ echo "<script>window.location.href='cart.php'</script>";
 </thead>
 <tbody>
     <?php 
-$userid= $_SESSION['fosuid'];
-$query=mysqli_query($con,"select tblorders.ID as frid,tblfood.Image,tblfood.ItemName,tblfood.ItemDes,tblfood.ItemPrice,tblfood.ItemQty,tblorders.FoodId,tblorders.FoodQty from tblorders join tblfood on tblfood.ID=tblorders.FoodId where tblorders.UserId='$userid' and tblorders.IsOrderPlaced is null");
-$num=mysqli_num_rows($query);
+$userid = (string) $_SESSION['fosuid'];
+$stmt = mysqli_prepare($con, "SELECT tblorders.ID as frid,tblfood.Image,tblfood.ItemName,tblfood.ItemDes,tblfood.ItemPrice,tblfood.ItemQty,tblorders.FoodId,tblorders.FoodQty FROM tblorders JOIN tblfood ON tblfood.ID = tblorders.FoodId WHERE tblorders.UserId = ? AND tblorders.IsOrderPlaced IS NULL");
+mysqli_stmt_bind_param($stmt, "s", $userid);
+mysqli_stmt_execute($stmt);
+$query = mysqli_stmt_get_result($stmt);
+$num = mysqli_num_rows($query);
 if($num>0){
 while ($row=mysqli_fetch_array($query)) {
  

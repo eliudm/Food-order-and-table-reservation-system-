@@ -4,16 +4,17 @@ error_reporting(0);
 include_once('includes/dbconnection.php');
 if(isset($_POST['addcart']))
 {
-$foodid=$_POST['foodid'];
-$foodqty=$_POST['foodqty'];
-$userid= $_SESSION['fosuid'];
-$query=mysqli_query($con,"insert into tblorders(UserId,FoodId,FoodQty) values('$userid','$foodid','$foodqty') ");
-if($query)
-{
- echo "<script>alert('Food has been added in to the cart');</script>";   
-} else {
- echo "<script>alert('Something went wrong.');</script>";      
-}
+    $foodid = intval($_POST['foodid']);
+    $foodqty = intval($_POST['foodqty']);
+    $userid = (string) $_SESSION['fosuid'];
+    $stmt = mysqli_prepare($con, "INSERT INTO tblorders(UserId,FoodId,FoodQty) VALUES (?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "sii", $userid, $foodid, $foodqty);
+    if(mysqli_stmt_execute($stmt))
+    {
+        echo "<script>alert('Food has been added in to the cart');</script>";   
+    } else {
+        echo "<script>alert('Something went wrong.');</script>";      
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -38,9 +39,12 @@ if($query)
      
 <?php
 //Getting Food details
- $cid=$_GET['fid'];
-$ret=mysqli_query($con,"select * from tblfood where ID='$cid'");
-$cnt=1;
+ $cid = intval($_GET['fid']);
+$stmt = mysqli_prepare($con, "SELECT * FROM tblfood WHERE ID = ?");
+mysqli_stmt_bind_param($stmt, "i", $cid);
+mysqli_stmt_execute($stmt);
+$ret = mysqli_stmt_get_result($stmt);
+$cnt = 1;
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
